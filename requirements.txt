@@ -1,0 +1,8 @@
+numpy
+pydantic
+pandas
+uvicorn
+fastapi
+typer
+ptvsd
+
