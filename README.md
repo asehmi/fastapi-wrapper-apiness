@@ -147,10 +147,10 @@ Either command should start a `fastapi` instance in `uvicorn` (_a lightning-fast
 ```
 (base) C:\Dev\apiness>fastapi-wrapper custommacromodel_l_a.csv --host localhost --port 8000 --database macro
 fastapi_wrapper v0.4.2
-🏗️ Creating > Database: macro | From file: custommacromodel_l_a.csv | Type: CSV | Update mode: replace
+Creating > Database: macro | From file: custommacromodel_l_a.csv | Type: CSV | Update mode: replace
 Initializing FastAPI_Wrapper...
-🦄 Starting API server (uvicorn)...
-💡 Check out the API docs at http://localhost:8000/docs | http://localhost:8000/redoc
+Starting API server (uvicorn)...
+Check out the API docs at http://localhost:8000/docs | http://localhost:8000/redoc
 --------------------------------------------------------------------------------
 INFO:     Started server process [18828]
 INFO:uvicorn.error:Started server process [18828]
@@ -173,7 +173,7 @@ INFO:uvicorn.error:Uvicorn running on http://localhost:8000 (Press CTRL+C to qui
 fastapi_wrapper v0.4.2
 Usage: fastapi-wrapper [OPTIONS] DATA_PATH [DATA_FORMAT]:[CSV|XLSX]
 
-  🏗️ Create APIs from CSV or XLSX data files within seconds, using fastapi.
+  Create APIs from CSV or XLSX data files within seconds, using fastapi.
 
   Just pass along a data file and this command will start a fastapi instance
   with auto-generated endpoints & query parameters to access the data.
