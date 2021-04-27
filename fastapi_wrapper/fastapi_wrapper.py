@@ -260,7 +260,7 @@ class FastAPI_Wrapper(FastAPI):
 
         self.openapi = custom_openapi
 
-        # Add shutdown event
+        # Add shutdown event (would only be of any use in a multi-process, not multi-thread situation)
         def shutdown():
             logging.info(f'>>> Graceful shutdown of API <<<')
         self.on_event('shutdown')(shutdown)

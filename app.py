@@ -114,13 +114,10 @@ def main():
                     st.write('\nTo stop the API you must terminate the app \U0001F631')
 
             st.markdown('### \U0001F4E1 API endpoints')
-            status = 'API IS LIVE \U0001F7E2' if state.API_STARTED else 'WAITING FOR LAUNCH \U0001F534'
-            st.markdown(f'### Status is {status}')
+            status = 'API IS LIVE \U0001F7E2' if state.API_STARTED else 'API IS PENDING LAUNCH \U0001F534'
+            st.markdown(f'### {status}')
 
-            ports = [v['port'] for (_, v) in state.API_INFO.items()]
-            # st.write(ports)
-
-            st.write(state.API_INFO)
+            print_api_info(state.API_INFO, state.API_HOST, state.API_PORT)
         else:
             st.write('\U0001F4E1 API details will be shown here when \U0001F4C2 uploaded files have been \U0001F528 processed.')
 
@@ -196,6 +193,7 @@ def create_databases(app, excel_files_dict, custom_info):
             time.sleep(0.5)
 
             state.API_INFO[api_info_key] = {
+                'source_file': excel_file.name,
                 'api_base_url': f'http://{state.API_HOST}:{state.API_PORT}/{db_name}/{table_name}',
                 'database': db_name,
                 'table': table_name,
@@ -253,6 +251,21 @@ def terminate_api():
         proc.terminate()
         state.API_THREAD_OR_PROC = None
         state.API_STARTED = False
+
+def print_api_info(api_info, host, port):
+    for (_, v) in api_info.items():
+        st.markdown(f'''
+            #### {v['source_file']}
+            - Database: **{v['database']}**
+            - Table: **{v['table']}**
+            - Endpoint: [**{v['api_base_url']}**]({v['api_base_url']}?cmd=LIMIT%203)
+            <p/>            
+        ''', unsafe_allow_html=True)
+    st.markdown(f'''
+        ### API docs
+        - [**http://{host}:{port}/docs**](http://{host}:{port}/docs)
+        - [**http://{host}:{port}/redoc**](http://{host}:{port}/redoc)
+    ''')
 
 def sidebar():
     st.sidebar.image('./images/logo.jpg', output_format='jpg')
