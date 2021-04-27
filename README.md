@@ -38,6 +38,18 @@ fast, even for huge files, especially for the in-memory case.
 - It can be useful for mocking data sources in CI/CD testing pipelines
 - To experiment with [FastAPI](https://fastapi.tiangolo.com/), which has garnered a lot of attention and enterprise adoption (e.g. Microsoft) 
 
+
+## Value of SQL Model DBs to OE?
+
+- Command line tooling lends itself to pipeline batch automation working with model bases
+- Use a standard, performant and scaleable data format and query language
+- Portable across multiple device form factors and operating systems
+- Easily shareable locally, in the cloud and edge data networks
+- Much better for data analytics and vizualization, e.g. direct connectors in Power BI & Tableau
+- Ability to store multiple model bases in a single SQL database, e.g. multiple scenarios or model vintages
+- Easy to export data to multiple target formats from a SQL DB using commonly available tools and programming languages
+- Can be used to augment model data exports from OE's Online Global Economic Model (SkyMod) API
+
 ---
 
 
@@ -48,7 +60,8 @@ The changes I made to [jrieke's](https://github.com/jrieke/fastapi-csv) original
 - Built a `Streamlit` application to:
   - Interactively upload one or more Excel data files
   - Configure each file's API endpoint
-  - Generate a SQLite database, for all or each file, and
+  - Generate a SQLite database, for all or each file
+  - Enable downloading of generated SQLite databases, and 
   - Launch FastAPI to serve the APIs
 - Simplified naming of auto-generated query params added to the API
 - Added `cols`, `where` and `cmd` query params for richer SQL queries of the endpoint (including defense against destructive SQL injections)
@@ -256,6 +269,10 @@ The columns returned by a query can be specified (including aliases) with the `c
 
 ![json_data](./images/json_data.png)
 
+### Downloading generated SQLite database
+
+- `/download/macro.db` or `/download/macro`
+
 ### Rendering results as HTML
 
 By default results are rendered as JSON where tabluar data is available on the `data` key. To render the data as an HTML table, simply add a `tohtml` parameter to the query.
@@ -381,6 +398,8 @@ See the file `TestReport.pbix` (requires the free PBI Desktop Application on Win
 - Extend to handle TXT files, different table layouts, etc.
 
 - Have the ability to import from Excel named ranges / data tables.
+
+- [DONE] Have the ability to download databases.
 
 - Break tight coupling between the api endpoint and the Excel filename
     - [DONE] User should interact with an "upload & generate api" workflow

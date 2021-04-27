@@ -256,7 +256,8 @@ def print_api_info(api_info, host, port):
     for (_, v) in api_info.items():
         st.markdown(f'''
             #### {v['source_file']}
-            - Database: **{v['database']}**
+            - Database: **{v['database']}.db**
+              - [Download SQL DB](http://{host}:{port}/download/{v['database']})
             - Table: **{v['table']}**
             - Endpoint: [**{v['api_base_url']}**]({v['api_base_url']}?cmd=LIMIT%203)
             <p/>            

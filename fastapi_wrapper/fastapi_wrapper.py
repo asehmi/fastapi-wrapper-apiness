@@ -8,12 +8,14 @@ import logging
 
 import fastapi
 from fastapi import FastAPI, Response, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
 import pandas as pd
 import sqlite3
 import numpy as np
 import pydantic
 import json
+import os
+from datetime import datetime
 
 from .html_helper import dicts_to_html
 
@@ -265,6 +267,31 @@ class FastAPI_Wrapper(FastAPI):
             logging.info(f'>>> Graceful shutdown of API <<<')
         self.on_event('shutdown')(shutdown)
 
+        # ----- FIXED ROUTES -----
+
+        # /download/{db}
+        # 
+        # Add download database method as GET endpoint to fastapi
+        # db is a path param
+        def download(db: str,
+                     responses={ 200: { 'description': 'Download SQL database file.',
+                                        'content' : {'application/octet-stream' : {'example' : 'No example available.'}}
+                     }}
+        ):
+            db = db if db.endswith('.db') else f'{db}.db'
+            file_path = os.path.join('./', db)
+            if os.path.exists(file_path):
+                suffix = str(datetime.now())[:-10].replace(' ', '_').replace(':','_')
+                db_suffix = db.replace('.db', f'_{suffix}.db')
+                return FileResponse(file_path, media_type='application/octet-stream', filename=db_suffix)
+            return {'error' : f'{db} file not found!'}
+
+        route_path = '/download/{db}'
+        route_name = 'download'
+        self.get(route_path, name=route_name, tags=[route_name])(download)
+
+        # /createdb?database=db&data_path=dp&data_format=<CSV | XLSX>&if_exists=<fail | replace | append>
+        #
         # Add createdb method as GET endpoint to fastapi
         # NOTE: Not very useful for physical DBs except when run locally!
         def createdb(**query_kwargs):
