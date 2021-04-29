@@ -1,26 +1,43 @@
-# FastAPI-Wrapper CLI & APIness Streamlit App
+# APINESS
+> _A FastAPI CLI & Streamlit App wrapper for Excel files_
 
 > Arvindra Sehmi, Oxford Economics Ltd. | [Website](https://www.oxfordeconomics.com/) | [LinkedIn](https://www.linkedin.com/in/asehmi/)
-> (Updated: 21 April, 2021)
+
+> Updated: 28 April, 2021
+
+---
+
+
+## _Create APIs from data files within seconds, using FastAPI_
 
 `fastapi-wrapper` is motivated by the work of [jrieke](https://github.com/jrieke/fastapi-csv) on `fastapi-csv`.
 
-_Create APIs from data files within seconds, using FastAPI_
-
-This is a Python package to create APIs from data files (Excel XLSX and CSV only), using a lightweight & 
-fully customizable wrapper around [FastAPI](https://fastapi.tiangolo.com/). Endpoints 
+This is a Python package and Streamlit application to create APIs from data files (Excel XLSX and CSV only),
+using a lightweight & fully customizable wrapper around [FastAPI](https://fastapi.tiangolo.com/). Endpoints 
 and query parameters are auto-generated based on the column names and data types in the 
-data file. Its contents is written to either a temporary in-memory or persistent `SQLite` database, so the API can be blazing 
-fast, even for huge files, especially for the in-memory case.
+data file. Its contents is written to either a temporary in-memory or persistent `SQLite` database, so the
+API can be blazing fast, even for huge files, especially for the in-memory case.
 
 ## TOC
 - Why did I implement this?
+- Value of SQL Model DBs to OE?
 - Mods
 - Streamlit App Demo
+  - Running the Streamlit app
+  - Downloading generated SQLite database
 - CLI Demo
 - How to use fastapi-wrapper from the command line (CSV Example)
+  - Installing the CLI
+  - Running the CLI
+  - Command line switches
+  - API documentation
+  - Querying the API
+  - Rendering results as HTML
 - How to use fastapi-wrapper from Python (XLSX Example)
+  - Extending the API
+  - Updating data
 - Example using the API in Power BI
+- How to directly connect to SQLite database in Excel
 - My thoughts on additional requirements
 - The APINESS Factor
 - Resources
@@ -110,6 +127,26 @@ In this demo:
 ![st_demo](./images/fastapi_wrapper_st_demo.gif)
 
 > IMPORTANT: The API is launched via `uvicorn` on its own thread and can't be killed. The only way currently to stop uvicorn and Streamlit is to kill the Python host process.
+
+### Running the Streamlit app
+
+```bash
+# sets the port number too
+streamlit run --server.port 4010 app.py
+```
+
+### Downloading generated SQLite database
+
+When the API is made live in the Streamlit application, open another browser window and enter the following URL:
+
+(_All URL fragments below are prefixed with_ `http://localhost:8000`)
+
+- `/download/macro.db`, or
+- `/download/macro`
+
+This assumes you have an API in the Streamlit application with a database named `macro`.
+
+Alternatively, click on the `download` links which will be displayed in a list of deployed API endpoints in the Streamlit application.
 
 ---
 
@@ -227,14 +264,14 @@ fastapi-wrapper custommacromodel_l_a.csv --host localhost --port 8000 --database
 
 ### API documentation
 
-The auto-generated API documentation is available here:
+When the API server is running, auto-generated API documentation is available here:
 
 - Interactive: http://localhost:8000/docs
 - Reference: http://localhost:8000/redoc
 
 ### Querying the API
 
-In a browser window enter the following parameterised URLs:
+When the API server is running, open a browser window and enter the following parameterised URLs:
 
 (_All URL fragments below are prefixed with_ `http://localhost:8000`)
 
@@ -268,10 +305,6 @@ The columns returned by a query can be specified (including aliases) with the `c
 > for `where` and `cols` parameters, case does <u>not</u> matter.
 
 ![json_data](./images/json_data.png)
-
-### Downloading generated SQLite database
-
-- `/download/macro.db` or `/download/macro`
 
 ### Rendering results as HTML
 
@@ -377,6 +410,45 @@ See the file `TestReport.pbix` (requires the free PBI Desktop Application on Win
 
 ---
 
+## How to directly connect to SQLite database in Excel
+
+Whilst you can use the generated API endpoint to get data into Excel (via `Data > Get Data > From Other Sources > From Web` menu) or via `Power Query` as used in the `Power BI` example decribed earlier, you can also connect directly to the generated SQLite database that was generated in the process of creating the API endpoint. Here are the steps to take:
+
+1. Install a [SQLite ODBC driver](http://www.ch-werner.de/sqliteodbc/) with bitness matching the bitness of your Excel application (either 32-bit or 64-bit)
+2. Open Excel and create a new worksheet
+3. Open `Data > Get Data > From Other Sources > Blank Query` menu
+4. In the `Power Query Editor`, select `Home > Query Ribbon Section > Advanced Editor`
+5. Paste this code block into the editor:
+
+    ```code
+    let
+        Source = Odbc.DataSource("driver={SQLite3 ODBC Driver};database=full-path-to-db;dsn=SQLite3 Datasource", [HierarchicalNavigation=true]),
+        data_Table = Source{[Name="data_table_name",Kind="Table"]}[Data]
+    in
+        data_Table
+    ```
+
+    Replace `full-path-to-db` and `data_table_name` with your custom values. For example:
+
+    ```code
+    let
+        Source = Odbc.DataSource("driver={SQLite3 ODBC Driver};database=C:\data\test.db;dsn=SQLite3 Datasource", [HierarchicalNavigation=true]),
+        test_Table = Source{[Name="test",Kind="Table"]}[Data]
+    in
+        test_Table
+    ```
+
+    Note, you can build this Power Query manually, step-by-step, using the editor tools!
+
+6. Configure optional additional data transformation steps in Power Query Editor as required.
+7. Click the `Close & Load` menu and choose where you're loading your data to.
+
+    Ensure your don't exceed 1M rows if you're going to load the data into the worksheet; no problem if you'll load it into the Power Query Data Model, aka Veripaq.
+    
+8. When the SQLite connection is made you'll be asked to supply credentials. Normally, choosing Windows credentials should be sufficient.
+
+
+---
 
 ## My thoughts on additional requirements
 
