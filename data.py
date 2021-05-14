@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import sqlite3
 
 @st.cache(allow_output_mutation=True)
 def csv_to_df(excel_file):

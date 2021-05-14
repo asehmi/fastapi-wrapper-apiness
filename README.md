@@ -3,7 +3,7 @@
 
 > Arvindra Sehmi, Oxford Economics Ltd. | [Website](https://www.oxfordeconomics.com/) | [LinkedIn](https://www.linkedin.com/in/asehmi/)
 
-> Updated: 28 April, 2021
+> Updated: 13 May, 2021
 
 ---
 
@@ -18,8 +18,15 @@ and query parameters are auto-generated based on the column names and data types
 data file. Its contents is written to either a temporary in-memory or persistent `SQLite` database, so the
 API can be blazing fast, even for huge files, especially for the in-memory case.
 
+In addition, alongside the generated database(s), a configuration database is created with all the
+metadata required to recreate the API on the databases without having to load the original source data files.
+In effect, a package comprising the data databases and associated configurtion database makes the API
+portable to any machine that has the `fastapi-wrapper` CLI tool installed.
+
+Read on to see how to get this little magic into your data handling workflows.
+
 ## TOC
-- Why did I implement this?
+- Why I implemented this?
 - Value of SQL Model DBs to OE?
 - Mods
 - Streamlit App Demo
@@ -46,25 +53,27 @@ API can be blazing fast, even for huge files, especially for the in-memory case.
 ---
 
 
-## Why did I implement this?
+## Why I implemented this?
 
 - To enhance and extend some internal Oxford Economics (OE) tools, e.g., [Modelit](https://github.com/OxfordEconomics/Streamlit-Projects/tree/master/Modelit)
-  project [OE clients only, sorry!] so that [MDL-generated data exports](https://www.oxfordeconomics.com/techlabs/mdl-use-case-automating-model-solutions)
+  project [available to OE clients only, sorry!] so that [MDL-generated data exports](https://www.oxfordeconomics.com/techlabs/mdl-use-case-automating-model-solutions)
   can enjoy some _apiness_ `:-)`
-- An easy way to expose _Excel-Files-as-Databases_ with a _REST API_ so they can be queried in `Streamlit`, and other apps such as `Power BI` and `Jupyter Notebooks`
+- An easy way to expose _Excel-Files-as-Databases_ with a _REST API_ so they can be queried in `Streamlit`, and other apps such as `Power BI`, `Tableau` and `Jupyter Notebooks`
 - It can be useful for mocking data sources in CI/CD testing pipelines
-- To experiment with [FastAPI](https://fastapi.tiangolo.com/), which has garnered a lot of attention and enterprise adoption (e.g. Microsoft) 
+- To experiment with [FastAPI](https://fastapi.tiangolo.com/), which has gained much attention and enterprise adoption (e.g. Microsoft) 
 
 
 ## Value of SQL Model DBs to OE?
 
-- Command line tooling lends itself to pipeline batch automation working with model bases
-- Use a standard, performant and scaleable data format and query language
-- Portable across multiple device form factors and operating systems
-- Easily shareable locally, in the cloud and edge data networks
-- Much better for data analytics and vizualization, e.g. direct connectors in Power BI & Tableau
-- Ability to store multiple model bases in a single SQL database, e.g. multiple scenarios or model vintages
-- Easy to export data to multiple target formats from a SQL DB using commonly available tools and programming languages
+- Command line tooling lends itself to pipeline batch automation working with OE's economic model bases
+- Enables OE staff to use a standard, high performance and scaleable data format and query language. This makes for a
+more flexible and efficient workflow than can eb achieved using OE's native model database tools
+- SQL databases are portable across multiple device form factors and operating systems. This is especially true of SQLite databases.
+- SQL databases are easily shared on local, cloud and edge data networks
+- SQL databases are better for data analytics and vizualization tasks, e.g. direct connectors in Power BI & Tableau
+- Ability to store multiple model bases in a single SQL database, e.g. multiple scenarios or model vintages can be stored in one SQL database
+- It's easy to export data to multiple target formats from a SQL DB using commonly available tools and programming languages,
+e.g. [DB Browser for SQLite](https://sqlitebrowser.org/)
 - Can be used to augment model data exports from OE's Online Global Economic Model (SkyMod) API
 
 ---
@@ -77,18 +86,21 @@ The changes I made to [jrieke's](https://github.com/jrieke/fastapi-csv) original
 - Built a `Streamlit` application to:
   - Interactively upload one or more Excel data files
   - Configure each file's API endpoint
-  - Generate a SQLite database, for all or each file
-  - Enable downloading of generated SQLite databases, and 
-  - Launch FastAPI to serve the APIs
-- Simplified naming of auto-generated query params added to the API
-- Added `cols`, `where` and `cmd` query params for richer SQL queries of the endpoint (including defense against destructive SQL injections)
+  - Generate a SQLite database, for all or each uploaded Excel data file
+  - Generate an API routes metadata configuration file which allows you to deploy an API independently of the source Excel data files
+    - `Databases + API Routes Config = BYOAPI`! 
+  - Allow downloads of generated SQLite data databases and routes configuration databases, and
+  - Launch FastAPI to serve the APIs. Both _test_ and _live_ modes are supported to enable iterative 
+  development. Live running APIs can be stopped from within the `Streamlit` application.
+- Variety of auto-generated query params has been increased, including addition of `cols`, `where` and `cmd` query params for rich SQL queries of the endpoint
+  - (SQL injection attacks are prevented)
 - Error handling
-- Rendering response data as JSON and HTML
-- Restructured return json results to add some metadata useful for debugging, for example:
+- Response data can be rendered as JSON and HTML tables
+- Json results hold some metadata useful for debugging, for example:
 
 ```json
 {   "metadata": {
-        "database": "macro",
+        "database": "c:\\Dev\\fastapi-wrapper-apiness\\sql_db\\macro.db",
         "table": "custommacromodel_l_a",
         "sql_query": "SELECT * FROM custommacromodel_l_a WHERE (Location IN (\"United Kingdom\")) LIMIT 2",
         "full_count": 1278,
@@ -121,12 +133,12 @@ In this demo:
 1. The user successively uploads one or more XLSX/CSV files
 2. The app displays a row of edit fields for each uploaded file allowing the user to configure the database name, table name, and update mode
 3. The configuration and files are submitted for processing, that is, databases are generated and populated with their file data and (Fast)API endpoints are created
-4. After the user has uploaded and processed all their files, the FastAPI server is started making the API live
-5. The user interacts with the live API via a browser
+4. After the user has uploaded and processed all their files, the FastAPI server is started in test or live mode
+5. The user interacts with the API via a browser
 
 ![st_demo](./images/fastapi_wrapper_st_demo.gif)
 
-> IMPORTANT: The API is launched via `uvicorn` on its own thread and can't be killed. The only way currently to stop uvicorn and Streamlit is to kill the Python host process.
+> IMPORTANT: The live API is launched via `uvicorn` on its own threaded process and can be safely killed to restart the API-building session.
 
 ### Running the Streamlit app
 
@@ -146,7 +158,13 @@ When the API is made live in the Streamlit application, open another browser win
 
 This assumes you have an API in the Streamlit application with a database named `macro`.
 
+The API configuration database can be downloaded with the following URL:
+
+- `/download/apiness_routes_config.db`
+
 Alternatively, click on the `download` links which will be displayed in a list of deployed API endpoints in the Streamlit application.
+
+> IMPORTANT: All databases are generated in the `./sql_db` sub-folder of the main Streamlit app directory.
 
 ---
 
@@ -195,15 +213,27 @@ fastapi-wrapper https://raw.githubusercontent.com/asehmi/fastapi-wrapper/main/Cu
 Either command should start a `fastapi` instance in `uvicorn` (_a lightning-fast ASGI web server_) on the default `host` and `port`.
 
 ```
-(base) C:\Dev\apiness>fastapi-wrapper custommacromodel_l_a.csv --host localhost --port 8000 --database macro
-fastapi_wrapper v0.4.2
-Creating > Database: macro | From file: custommacromodel_l_a.csv | Type: CSV | Update mode: replace
+(base) C:\Dev\fastapi-wrapper-apiness>fastapi-wrapper .\data\custommacromodel_l_a.csv --host localhost --port 8000 --database macro
+fastapi_wrapper v0.5.5
+>>> CWD: C:\Dev\fastapi-wrapper-apiness <<<
+--------------------------------------------------------------------------------
+>>> Applicable argument values <<<
+data_path: .\data\custommacromodel_l_a.csv
+data_format: CSV
+database: macro
+config_db: routes_config.db
+if_exists: replace
+start_server: True
+host: localhost
+port: 8000
+--------------------------------------------------------------------------------
+Creating > Database: macro | From file: .\data\custommacromodel_l_a.csv | Type: CSV | Update mode: replace
 Initializing FastAPI_Wrapper...
 Starting API server (uvicorn)...
 Check out the API docs at http://localhost:8000/docs | http://localhost:8000/redoc
 --------------------------------------------------------------------------------
-INFO:     Started server process [18828]
-INFO:uvicorn.error:Started server process [18828]
+INFO:     Started server process [14380]
+INFO:uvicorn.error:Started server process [14380]
 INFO:     Waiting for application startup.
 INFO:uvicorn.error:Waiting for application startup.
 INFO:     Application startup complete.
@@ -219,20 +249,35 @@ INFO:uvicorn.error:Uvicorn running on http://localhost:8000 (Press CTRL+C to qui
 `fastapi-wrapper --help` command line switch prints some useful info:
 
 ```bash
-(base) C:\Dev\apiness>fastapi-wrapper --help
-fastapi_wrapper v0.4.2
-Usage: fastapi-wrapper [OPTIONS] DATA_PATH [DATA_FORMAT]:[CSV|XLSX]
+(base) C:\Dev\fastapi-wrapper-apiness>fastapi-wrapper --help
+fastapi_wrapper v0.5.5
+>>> CWD: C:\Dev\fastapi-wrapper-apiness <<<
+Usage: fastapi-wrapper [OPTIONS] [DATA_PATH]
 
   Create APIs from CSV or XLSX data files within seconds, using fastapi.
 
   Just pass along a data file and this command will start a fastapi instance
   with auto-generated endpoints & query parameters to access the data.
 
+  APIs can also be created from previously-generated databases and their
+  associated API routes configuration database.
+
 Arguments:
-  DATA_PATH                 Path to the data file  [required]
-  [DATA_FORMAT]:[CSV|XLSX]  Format of data file  [default: CSV]
+  [DATA_PATH]  Path to the data file
 
 Options:
+  --data-format [CSV|XLSX]        Format of data file  [default: CSV]
+  --config-db TEXT                The routes config database to be generated.
+                                  Defaults to 'routes_config.db'.  [default:
+                                  routes_config.db]
+
+  --init-routes-with-config-db / --no-init-routes-with-config-db
+                                  Apply supplied 'config_db' to initialize
+                                  API. Assumes underlying SQLite database(s)
+                                  for the API routes exist. Requires
+                                  'config_db' argument. The server is always
+                                  started.  [default: False]
+
   --database TEXT                 Sqlite DB name. Defaults to in-memory DB.
                                   [default: :memory:]
 
@@ -244,13 +289,19 @@ Options:
                                   Start server.  [default: True]
   --host TEXT                     IP to run the API on  [default: 127.0.0.1]
   --port INTEGER                  Port to run the API on  [default: 8000]
+  --install-completion [bash|zsh|fish|powershell|pwsh]
+                                  Install completion for the specified shell.
+  --show-completion [bash|zsh|fish|powershell|pwsh]
+                                  Show completion for the specified shell, to
+                                  copy it or customize the installation.
+
   --help                          Show this message and exit.
   ```
 
 For example:
 
 ```bash
-fastapi-wrapper custommacromodel_l_a.csv --host localhost --port 8000 --database macro
+fastapi-wrapper .\data\custommacromodel_l_a.csv --host localhost --port 8000 --database macro
 ```
 
 - `fastapi-wrapper` auto-generates endpoints and query parameters based on the CSV file
@@ -258,16 +309,38 @@ fastapi-wrapper custommacromodel_l_a.csv --host localhost --port 8000 --database
 - The URL fragments are `/<database name | :memory:>/<database table name>`
 - The table name is the same as the file name, but lowercased
 - The endpoint can be queried using the imported file's column names
-- And finally, a `SQLite` database named `macro.db`, will also be created
 
 > IMPORTANT: The endpoint fragments and column names used as query parameters are lowercased. Spaces in their names will be replaced with underscore ('_').
+
+- A `SQLite` database named `macro.db` will be created in `.\sql_db` sub-directory
+- And finally, another `SQLite` database named `routes_config.db` will be created in `.\sql_db` sub-directory. You can supply
+a custom name for your routes configuration database using the the `--config-db` switch.
+
+
+### Portable API (BYOAPI!)
+
+The routes configuration database always generated when `fastapi-wrapper` is run with an Excel data file, can be used along with the generated data database to deploy your API.
+
+For example:
+
+```bash
+# Running this command generates a custom configuration: my_custom_routes.db
+fastapi-wrapper .\data\custommacromodel_l_a.csv --config-db my_custom_routes.db --host localhost --port 8000 --database macro
+
+# The custom configuration database (my_custom_routes.db) can then be used to deploy the API, given the data database (macro.db) is in '.\sql_db'
+fastapi-wrapper --config-db my_custom_routes.db --init-routes-with-config-db --host localhost --port 8000
+```
+
+> IMPORTANT: The above command will start the `FastAPI` server exposing endpoints described by metadata held in the `routes_config` table of `my_custom_routes.db` configuration database.
+
+> If you want to create more than one route definition in the configuration database, you must use the Streamlit application. The CLI supports only one data and route configuration database at a time.  
 
 ### API documentation
 
 When the API server is running, auto-generated API documentation is available here:
 
-- Interactive: http://localhost:8000/docs
-- Reference: http://localhost:8000/redoc
+- Interactive: [http://localhost:8000/docs](http://localhost:8000/docs)
+- Reference: [http://localhost:8000/redoc](http://localhost:8000/redoc)
 
 ### Querying the API
 
@@ -281,8 +354,8 @@ When the API server is running, open a browser window and enter the following pa
 Additionally, `fastapi-wrapper` creates some convenience query parameters for specific data types, e.g. 
 
 - `/macro/custommacromodel_l_a?year_gt=2020` (for int/float)
-- `/macro/custommacromodel_l_a?location_in=Kingdom` (for string, watch out: this one is case sensitive!)
-- `/macro/custommacromodel_l_a?year_lte=2020&Location_in=United Kingdom&indicator_in=GDPAGR`
+- `/macro/custommacromodel_l_a?location_like=Kingdom` (for string, watch out: this one is case sensitive!)
+- `/macro/custommacromodel_l_a?year_lte=2020&location_like=United Kingdom&indicator_like=GDPAGR`
 
 Numerical values can be quoted or not. Strings should not be quoted in query values.
 
@@ -362,11 +435,11 @@ The queries are similar to the CSV case above, except the endpoint is different:
 
 This shows use of `cols` query parameter:
 
-- `/gcfs/gcfs_countries?cols=location, indicator, year, value&location_in=United Kingdom`
+- `/gcfs/gcfs_countries?cols=location, indicator, year, value&location_like=United Kingdom`
 
-This shows use of `_ina` and `_inz` query parameters to match at the beginning and end of values respectively, and column name aliases:
+This shows use of `_begin` and `_end` query parameters to match at the beginning and end of values respectively, and column name aliases:
 
-- `/gcfs/gcfs_countries?location_in=United Kingdom&indicator_code_ina=GDP&indicator_code_inz=USC&cols=Location as LOC,Indicator as VAR,Indicator_Code as VARCODE,Value as VAL,Year as YR`
+- `/gcfs/gcfs_countries?location_like=United Kingdom&indicator_code_begin=GDP&indicator_code_end=USC&cols=Location as LOC,Indicator as VAR,Indicator_Code as VARCODE,Value as VAL,Year as YR`
 
 ### Extending the API
 
@@ -374,7 +447,7 @@ The cool thing: `FastAPI_Wrapper` only extends `FastAPI`. Therefore, you can do
 all the stuff you can do with a normal fastapi instance, e.g. add a new endpoint:
 
 ```python
-# Add a new endpoint, just like in normal fastapi
+# Add a new endpoint, similar to normal FastAPI, assuming app is an instance of FastAPI_Wrapper()
 @app.get("/hello")
 def hello(self):
     return {"Hello:", "World"}
@@ -414,7 +487,7 @@ See the file `TestReport.pbix` (requires the free PBI Desktop Application on Win
 
 Whilst you can use the generated API endpoint to get data into Excel (via `Data > Get Data > From Other Sources > From Web` menu) or via `Power Query` as used in the `Power BI` example decribed earlier, you can also connect directly to the generated SQLite database that was generated in the process of creating the API endpoint. Here are the steps to take:
 
-1. Install a [SQLite ODBC driver](http://www.ch-werner.de/sqliteodbc/) with bitness matching the bitness of your Excel application (either 32-bit or 64-bit)
+1. Install a [SQLite ODBC driver](http://www.ch-werner.de/sqliteodbc/) with bitness matching the bitness of your Excel application (either 32-bit or 64-bit, e.g. `sqliteodbc_w64.exe`)
 2. Open Excel and create a new worksheet
 3. Open `Data > Get Data > From Other Sources > Blank Query` menu
 4. In the `Power Query Editor`, select `Home > Query Ribbon Section > Advanced Editor`
@@ -444,9 +517,11 @@ Whilst you can use the generated API endpoint to get data into Excel (via `Data 
 7. Click the `Close & Load` menu and choose where you're loading your data to.
 
     Ensure your don't exceed 1M rows if you're going to load the data into the worksheet; no problem if you'll load it into the Power Query Data Model, aka Veripaq.
-    
+
 8. When the SQLite connection is made you'll be asked to supply credentials. Normally, choosing Windows credentials should be sufficient.
 
+
+> IMPORTANT: Whilst Direct Query (via API or DB connection) is cool, it is always going to be slower than importing the data. See [this Twitter thread](https://twitter.com/InsightsMachine/status/1388461088409223179/photo/1) and [this video](https://www.youtube.com/watch?v=L3uT-cn_eO8).
 
 ---
 
@@ -518,9 +593,11 @@ There are tons of resources on the web. These are some I have looked at:
 - [Quickly Develop Highly Performant APIs with FastAPI & Python](https://livecodestream.dev/post/quickly-develop-highly-performant-apis-with-fastapi-python/)
 - [Deploying a Python FastAPI on Azure App Service](https://techcommunity.microsoft.com/t5/apps-on-azure/deploying-a-python-fastapi-on-azure-app-service/m-p/1757016)
 - [How to capture arbitrary paths at one route in FastAPI](https://stackoverflow.com/questions/63069190/how-to-capture-arbitrary-paths-at-one-route-in-fastapi)
-- [Sharing python objects across multiple workers](https://stackoverflow.com/questions/65686318/sharing-python-objects-across-multiple-workers)
 - [Why You Should Try FastAPI](https://www.queworx.com/blog/why-you-should-try-fastapi/)
 - [Video: How to Deploy FastAPI on Azure App Service in just 30 minutes](https://www.youtube.com/watch?v=oLdEI3zUcFg)
+- [Shutting down the uvicorn server master from a FastAPI worker](https://github.com/tiangolo/fastapi/issues/1509)
+- [How to get the return value from a thread in python?](https://stackoverflow.com/questions/6893968/how-to-get-the-return-value-from-a-thread-in-python)
+- [Sharing python objects across multiple workers](https://stackoverflow.com/questions/65686318/sharing-python-objects-across-multiple-workers)
 - [Turn your Excel Workbook into a SQLite Database](https://towardsdatascience.com/turn-your-excel-workbook-into-a-sqlite-database-bc6d4fd206aa)
 - [Uvicorn + FastAPI](https://stackoverflow.com/questions/57412825/how-to-start-a-uvicorn-fastapi-in-background-when-testing-with-pytest)
 - [Dynamic/runtime method creation (code generation) in Python](https://stackoverflow.com/questions/533382/dynamic-runtime-method-creation-code-generation-in-python)

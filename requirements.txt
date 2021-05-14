@@ -1,3 +1,4 @@
+streamlit>=0.81
 numpy
 pydantic
 pandas
@@ -5,4 +6,7 @@ uvicorn
 fastapi
 typer
 ptvsd
+aiofiles
+environ
+python-dotenv
 
