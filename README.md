@@ -37,6 +37,7 @@ Read on to see how to get this little magic into your data handling workflows.
   - Installing the CLI
   - Running the CLI
   - Command line switches
+  - Portable API (BYOAPI!)
   - API documentation
   - Querying the API
   - Rendering results as HTML
