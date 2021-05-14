@@ -20,7 +20,7 @@ API can be blazing fast, even for huge files, especially for the in-memory case.
 
 In addition, alongside the generated database(s), a configuration database is created with all the
 metadata required to recreate the API on the databases without having to load the original source data files.
-In effect, a package comprising the data databases and associated configurtion database makes the API
+In effect, a package comprising the data databases and associated configuration database makes the API
 portable to any machine that has the `fastapi-wrapper` CLI tool installed.
 
 Read on to see how to get this little magic into your data handling workflows.
