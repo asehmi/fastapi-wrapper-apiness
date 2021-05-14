@@ -3,7 +3,7 @@
 
 > Arvindra Sehmi, Oxford Economics Ltd. | [Website](https://www.oxfordeconomics.com/) | [LinkedIn](https://www.linkedin.com/in/asehmi/)
 
-> Updated: 13 May, 2021
+> Updated: 14 May, 2021
 
 ---
 
@@ -198,7 +198,7 @@ pip uninstall fastapi-wrapper
 
 ### Running the CLI
 
-Use the CSV data file (472718 rows) in this repo for testing ([CustomMacroModel_L_A.csv](CustomMacroModel_L_A.csv)). To start
+Use the CSV data file (472718 rows) in this repo for testing ([CustomMacroModel_L_A.csv](./data/CustomMacroModel_L_A.csv)). To start
 an API, run one of the following commands:
 
 ```bash
@@ -206,7 +206,7 @@ an API, run one of the following commands:
 fastapi-wrapper CustomMacroModel_L_A.csv
 
 # Directly from URL
-fastapi-wrapper https://raw.githubusercontent.com/asehmi/fastapi-wrapper/main/CustomMacroModel_L_A.csv
+fastapi-wrapper https://raw.githubusercontent.com/asehmi/fastapi-wrapper-apiness/main/data/CustomMacroModel_L_A.csv
 
 # If you provide an xlsx file, then add XLSX as the second argument on the command line (see Python example below)
 ```
