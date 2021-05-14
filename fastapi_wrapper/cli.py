@@ -29,7 +29,7 @@ class IfExists(str, Enum):
 @typer_app.command()
 def main(
     data_path: str = typer.Argument(None, help="Path to the data file"),
-    data_format: Optional[DataFormat] = typer.Option(DataFormat.csv, help="Format of data file"),
+    data_format: Optional[DataFormat] = typer.Argument(DataFormat.csv, help="Format of data file"),
 
     config_db: Optional[str] = typer.Option("routes_config.db", help="The routes config database to be generated. Defaults to 'routes_config.db'."),
     init_routes_with_config_db: Optional[bool] = typer.Option(

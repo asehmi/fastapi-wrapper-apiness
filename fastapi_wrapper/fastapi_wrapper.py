@@ -176,7 +176,7 @@ class GenericEndpoint():
 
                     # clean parens and quoted terms, except for SQL expressions
                     if name not in ['cols', 'cmd', 'where']:
-                        val = val.replace('(', '').replace(')', '').replace('"', '')
+                        val = val.replace('(', '').replace(')', '').replace('"', '').strip()
 
                     if name.endswith("_gt"):
                         where_clauses.append(f"{name[:-3]}>{as_int_or_float(val)}")
@@ -188,7 +188,7 @@ class GenericEndpoint():
                         where_clauses.append(f"{name[:-4]}<={as_int_or_float(val)}")
                     elif name.endswith("_in"):
                         vals = re.split(',+',val)
-                        vals = [f'"{v}"' for v in vals]
+                        vals = [f'"{v.strip()}"' for v in vals]
                         vals = ','.join(vals)
                         where_clauses.append(f"{name[:-3]} IN ({vals})")
                     elif name.endswith("_like"):

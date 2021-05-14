@@ -265,9 +265,9 @@ Usage: fastapi-wrapper [OPTIONS] [DATA_PATH]
 
 Arguments:
   [DATA_PATH]  Path to the data file
+  [DATA_FORMAT]:[CSV|XLSX]  Format of data file  [default: CSV]
 
 Options:
-  --data-format [CSV|XLSX]        Format of data file  [default: CSV]
   --config-db TEXT                The routes config database to be generated.
                                   Defaults to 'routes_config.db'.  [default:
                                   routes_config.db]
@@ -438,9 +438,14 @@ This shows use of `cols` query parameter:
 
 - `/gcfs/gcfs_countries?cols=location, indicator, year, value&location_like=United Kingdom`
 
+This shows use of `_in` query parameter to match a set of values, displaying results as an HTML table:
+
+- `/gcfs/gcfs_countries?location_in=(UK,US)&tohtml`
+
 This shows use of `_begin` and `_end` query parameters to match at the beginning and end of values respectively, and column name aliases:
 
 - `/gcfs/gcfs_countries?location_like=United Kingdom&indicator_code_begin=GDP&indicator_code_end=USC&cols=Location as LOC,Indicator as VAR,Indicator_Code as VARCODE,Value as VAL,Year as YR`
+
 
 ### Extending the API
 
