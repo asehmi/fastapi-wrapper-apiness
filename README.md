@@ -310,12 +310,20 @@ fastapi-wrapper .\data\custommacromodel_l_a.csv --host localhost --port 8000 --d
 - The URL fragments are `/<database name | :memory:>/<database table name>`
 - The table name is the same as the file name, but lowercased
 - The endpoint can be queried using the imported file's column names
-
-> IMPORTANT: The endpoint fragments and column names used as query parameters are lowercased. Spaces in their names will be replaced with underscore ('_').
-
 - A `SQLite` database named `macro.db` will be created in `.\sql_db` sub-directory
 - And finally, another `SQLite` database named `routes_config.db` will be created in `.\sql_db` sub-directory. You can supply
 a custom name for your routes configuration database using the the `--config-db` switch.
+
+
+```bash
+fastapi-wrapper ".\data\GCFS Countries.xlsx" XLSX --host localhost --port 8000 --database gcfs
+```
+
+- `fastapi-wrapper` auto-generates endpoints and query parameters based on the XLSX file
+- Here, the API will have an endpoint `/gcfs/gcfs_countries`
+- Database `gcfs.db` along with `routes_config.db` configuration database will be created in `.\sql_db` sub-directory.
+
+> IMPORTANT: The endpoint fragments and column names used as query parameters are lowercased. Spaces in their names will be replaced with underscore ('_').
 
 
 ### Portable API (BYOAPI!)
