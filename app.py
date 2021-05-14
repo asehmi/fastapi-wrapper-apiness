@@ -260,8 +260,6 @@ def print_api_info(api_info, host, port):
             #### {v['source_file']}
             - Database: **{v['database']}.db**
               - [Download SQL DB](http://{host}:{port}/download/{v['database']})
-            - Configuration Database: **{v['database']}.db**
-              - [Download SQL DB](http://{host}:{port}/download/{v['database']})
             - Table: **{v['table']}**
             - Endpoint: [**{v['api_base_url']}**]({v['api_base_url']}?cmd=LIMIT%203)
             <p/>            
@@ -313,22 +311,23 @@ def sidebar():
             readme_lines = f.readlines()
             readme_buffer = []
             images = [
-                './images/fastapi_wrapper_demo.gif',
-                './images/fastapi_wrapper_st_demo.gif',
-                './images/fastapi_wrapper_installation.gif',
-                './images/json_data.png',
-                './images/html_table.png',
-                './images/pbi_report_m_lang.png',
-                './images/pbi_report.png',
-                './images/apiness.png',
-                './images/fastapi_testimonial.png'
+                'images/fastapi_wrapper_demo.gif',
+                'images/full_screenshot.png',
+                'images/fastapi_wrapper_st_demo.gif',
+                'images/fastapi_wrapper_installation.gif',
+                'images/json_data.png',
+                'images/html_table.png',
+                'images/pbi_report_m_lang.png',
+                'images/pbi_report.png',
+                'images/apiness.png',
+                'images/fastapi_testimonial.png'
             ]
             for line in readme_lines:
                 readme_buffer.append(line)
                 for image in images:
                     if image in line:
                         st.markdown(' '.join(readme_buffer[:-1]))
-                        st.image(image)
+                        st.image(f'https://raw.githubusercontent.com/asehmi/fastapi-wrapper-apiness/main/{image}')
                         readme_buffer.clear()
             st.markdown(' '.join(readme_buffer))
 

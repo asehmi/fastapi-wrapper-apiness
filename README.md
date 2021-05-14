@@ -136,6 +136,7 @@ In this demo:
 3. The configuration and files are submitted for processing, that is, databases are generated and populated with their file data and (Fast)API endpoints are created
 4. After the user has uploaded and processed all their files, the FastAPI server is started in test or live mode
 5. The user interacts with the API via a browser
+6. The user shuts down the API
 
 ![st_demo](./images/fastapi_wrapper_st_demo.gif)
 
@@ -143,8 +144,17 @@ In this demo:
 
 ### Running the Streamlit app
 
+Ensure you have installed package requirements with the commands:
+
 ```bash
-# sets the port number too
+# change to the Streamlit <app root folder>, e.g.
+cd ./fastapi-wrapper-apiness
+pip install -r requirements.txt
+```
+Now run Streamlit will `app.py`:
+
+```bash
+# I prefer to set the port number too
 streamlit run --server.port 4010 app.py
 ```
 
@@ -157,7 +167,7 @@ When the API is made live in the Streamlit application, open another browser win
 - `/download/macro.db`, or
 - `/download/macro`
 
-This assumes you have an API in the Streamlit application with a database named `macro`.
+This assumes you have built an API in the Streamlit application with a database named `macro`.
 
 The API configuration database can be downloaded with the following URL:
 
@@ -166,6 +176,10 @@ The API configuration database can be downloaded with the following URL:
 Alternatively, click on the `download` links which will be displayed in a list of deployed API endpoints in the Streamlit application.
 
 > IMPORTANT: All databases are generated in the `./sql_db` sub-folder of the main Streamlit app directory.
+
+To stop the FastAPI Server, click the `Shutdown API` button in the sidebar.
+
+![screenshot](./images/full_screenshot.png)
 
 ---
 
