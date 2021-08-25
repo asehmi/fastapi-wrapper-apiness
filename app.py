@@ -67,7 +67,7 @@ def main():
         st.markdown('## \U0001F4C2 Upload data files')
         st.write('Upload one or more Excel data files. Duplicate files and files already processed will be ignored.')
         excel_files =  st.file_uploader('', type=['xlsx', 'csv'], accept_multiple_files=True, key=state.FILE_UPLOADER_KEY)
-        _, _, _, _, _, _, c7 = st.beta_columns(7) 
+        _, _, _, _, _, _, c7 = st.columns(7) 
         if len(excel_files) > 0 and c7.button('\U00002716 Clear all'):
             state.FILE_UPLOADER_KEY = str(randint(1000,9999))
             st.experimental_rerun()
@@ -80,7 +80,7 @@ def main():
                  'for each data file.')
         st.caption('_Repeat_ as many times as required.')
         excel_files_dict, custom_names_info = database_info_form(excel_files)
-        _, _, _, _, _, _, c7 = st.beta_columns(7) 
+        _, _, _, _, _, _, c7 = st.columns(7) 
         if c7.button('\U0001F528 Process'):
             state.API_INFO = create_databases(
                 app, excel_files_dict, custom_names_info,
@@ -92,20 +92,19 @@ def main():
         st.markdown('## \U0001F3F3\U0000FE0F\U0000200D\U0001F308 Launch API')
         st.write('When customization is complete, select \U0001F680 **Launch** to start the API endpoints.')
 
-        with st.beta_expander('\U0001F3D7 Set test mode and duration (optional)', expanded=False):
-            c1, _, c3, _, _, _ = st.beta_columns(6)
-            c1.write('\n')
+        with st.expander('\U0001F3D7 Set test mode and duration (optional)', expanded=False):
+            c1, c2, _ = st.columns(3)
             test_mode = c1.checkbox('On | Off', value=True)
-            test_duration = c3.slider('Test duration (seconds)', min_value=15, max_value=600, value=15, step=15)
+            test_duration = c2.slider('Test duration (seconds)', min_value=15, max_value=600, value=30, step=15)
 
         status = st.empty()
         status.markdown('### Status: Pending Launch \U0001F534 | Test Mode ' + ('On \U0001F7E2' if test_mode else 'Off \U0001F534'))
         if st.checkbox('\U0001F680 Launch', value=False):
 
-            with st.beta_expander('\U0001F4E1 API endpoint details'):
+            with st.expander('\U0001F4E1 API endpoint details'):
                 if len(state.API_INFO.items()) > 0:
                     st.markdown('### \U0001F4E1 API endpoints')
-                    print_api_info(state.API_INFO, settings.API_HOST, settings.API_PORT)
+                    print_api_info(state.API_INFO, state.API_CONFIG_DB, settings.API_HOST, settings.API_PORT)
                 else:
                     st.write('\U0001F4E1 API details will be shown here when \U0001F4C2 uploaded files have been \U0001F528 processed.')
 
@@ -171,7 +170,7 @@ def database_info_form(excel_files):
     for _, excel_file in excel_files_dict.items():
         key = excel_file.name.lower().replace('.csv', '').replace('.xlsx', '').replace(' ', '_').replace('.', '_')
 
-        c1, c2, c3, c4 = st.beta_columns(4)
+        c1, c2, c3, c4 = st.columns(4)
         if len(custom_names_info.items()) == 0:
             c1.markdown('### File')
             c2.markdown('### Custom DB name')
@@ -190,7 +189,8 @@ def database_info_form(excel_files):
         with c4:
             update_mode_key = f'update_mode#{key}'
             st.write('\n')
-            custom_names_info[update_mode_key] = st.radio('', ['replace', 'append', 'fail'], key=update_mode_key)
+            custom_names_info[update_mode_key] = st.radio('', ['replace', 'append', 'fail'], index=0, key=update_mode_key)
+            # custom_names_info[update_mode_key] = st.selectbox('', ['replace', 'append', 'fail'], index=0, key=update_mode_key)
 
     return excel_files_dict, custom_names_info
 
@@ -245,14 +245,14 @@ def create_databases(app, excel_files_dict, custom_names_info, api_info, started
 
     return api_info
 
-def print_api_info(api_info, host, port):
+def print_api_info(api_info, config, host, port):
     st.markdown(f'''
         Your API can be tested incrementally. When you're ready, download the generated data databases
         and associated API configuration database. You will then be able to run the API using the
         command line interface (CLI) application (run `fastapi-wrapper --help` for instructions).
 
-        - Configuration Database: **{state.API_CONFIG_DB}**
-          - [Download Config DB](http://{host}:{port}/download/{state.API_CONFIG_DB})
+        - Configuration Database: **{config}**
+          - [Download Config DB](http://{host}:{port}/download/{config})
         <p/>            
     ''', unsafe_allow_html=True)
     for (_, v) in api_info.items():

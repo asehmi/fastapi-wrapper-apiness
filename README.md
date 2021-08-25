@@ -67,11 +67,11 @@ Read on to see how to get this little magic into your data handling workflows.
 ## Value of SQL Model DBs to OE?
 
 - Command line tooling lends itself to pipeline batch automation working with OE's economic model bases
-- Enables OE staff to use a standard, high performance and scaleable data format and query language. This makes for a
-more flexible and efficient workflow than can eb achieved using OE's native model database tools
+- Enables OE staff to use a standard, high performance and scalable data format and query language. This makes for a
+more flexible and efficient workflow than can be achieved using OE's native model database tools
 - SQL databases are portable across multiple device form factors and operating systems. This is especially true of SQLite databases.
 - SQL databases are easily shared on local, cloud and edge data networks
-- SQL databases are better for data analytics and vizualization tasks, e.g. direct connectors in Power BI & Tableau
+- SQL databases are better for data analytics and visualization tasks, e.g. direct connectors in Power BI & Tableau
 - Ability to store multiple model bases in a single SQL database, e.g. multiple scenarios or model vintages can be stored in one SQL database
 - It's easy to export data to multiple target formats from a SQL DB using commonly available tools and programming languages,
 e.g. [DB Browser for SQLite](https://sqlitebrowser.org/)
@@ -151,7 +151,7 @@ Ensure you have installed package requirements with the commands:
 cd ./fastapi-wrapper-apiness
 pip install -r requirements.txt
 ```
-Now run Streamlit will `app.py`:
+Now run Streamlit with `app.py`:
 
 ```bash
 # I prefer to set the port number too
