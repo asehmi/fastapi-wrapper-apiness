@@ -201,7 +201,7 @@ def create_databases(app, excel_files_dict, custom_names_info, api_info, started
         message.info(f'Loading {excel_file.name}...')
         time.sleep(0.5)
 
-        if excel_file.type == 'application/vnd.ms-excel':
+        if excel_file.type in ['application/vnd.ms-excel', 'application/octet-stream']:
             df = csv_to_df(excel_file)
         else: # 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             df = excel_to_df(excel_file)

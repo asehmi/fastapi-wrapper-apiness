@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import openpyxl
 
 @st.cache(allow_output_mutation=True)
 def csv_to_df(excel_file):
@@ -8,6 +9,6 @@ def csv_to_df(excel_file):
 
 @st.cache(allow_output_mutation=True)
 def excel_to_df(excel_file):
-    df = pd.read_excel(excel_file)
+    df = pd.read_excel(excel_file, engine=openpyxl)
     return df
 

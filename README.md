@@ -3,7 +3,7 @@
 
 > Arvindra Sehmi, Oxford Economics Ltd. | [Website](https://www.oxfordeconomics.com/) | [LinkedIn](https://www.linkedin.com/in/asehmi/)
 
-> Updated: 14 May, 2021
+> Updated: 14 September, 2021
 
 ---
 
@@ -151,6 +151,9 @@ Ensure you have installed package requirements with the commands:
 cd ./fastapi-wrapper-apiness
 pip install -r requirements.txt
 ```
+
+**Important:** Then, create a `.env` file in the application root based on the example available in `env.sample`.
+
 Now run Streamlit with `app.py`:
 
 ```bash
