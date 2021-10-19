@@ -10,8 +10,11 @@ import settings.settings as settings
 
 from data import csv_to_df, excel_to_df
 
-from utils.LayoutAndStyleUtils import (Grid, Cell, BlockContainerStyler)
-BlockContainerStyler().set_default_block_container_style()
+from utils.common import set_page_container_style
+set_page_container_style(
+        max_width = 1100, max_width_100_percent = True,
+        padding_top = 1, padding_right = 10, padding_left = 5, padding_bottom = 10
+)
 
 try:
     import ptvsd
@@ -23,16 +26,19 @@ except:
 
 # --------------------------------------------------------------------------------
 
-from utils import SessionState
 # Session State variables:
-state = SessionState.get(
-    API_APP = None,
-    API_INFO={}, # {'db#tbl': {'api_base_url': url, 'database': db, 'table': tbl, 'host': host, 'port': port}, ...}
-    API_STARTED=False,
-    API_CONFIG_DB='apiness_routes_config.db',
+state = st.session_state
 
-    FILE_UPLOADER_KEY = str(randint(1000,9999)),
-)
+if 'API_APP' not in state:
+    state.API_APP = None
+if 'API_INFO' not in state:
+    state.API_INFO={} # {'db#tbl': {'api_base_url': url, 'database': db, 'table': tbl, 'host': host, 'port': port}, ...}
+if 'API_STARTED' not in state:
+    state.API_STARTED=False
+if 'API_CONFIG_DB' not in state:
+    state.API_CONFIG_DB='apiness_routes_config.db'
+if 'FILE_UPLOADER_KEY' not in state:
+    state.FILE_UPLOADER_KEY = str(randint(1000,9999))
 
 # --------------------------------------------------------------------------------
 
