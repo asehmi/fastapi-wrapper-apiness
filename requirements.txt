@@ -11,4 +11,4 @@ django-environ
 python-dotenv
 markdown
 openpyxl
-
+matplotlib
