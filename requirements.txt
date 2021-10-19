@@ -12,3 +12,4 @@ python-dotenv
 markdown
 openpyxl
 matplotlib
+plotly
