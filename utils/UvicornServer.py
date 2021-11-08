@@ -9,7 +9,7 @@ class Server(uvicorn.Server):
         if app is None:
             raise RuntimeError('Error: uvicorn.Server app must be supplied.')
         config = uvicorn.Config(app, host=host, port=port, log_level=log_level)
-        super().__init__(config)
+        super().__init__(config=config)
 
     def install_signal_handlers(self):
         pass

@@ -5,7 +5,7 @@ pandas
 uvicorn
 fastapi
 typer
-ptvsd
+debugpy
 aiofiles
 django-environ
 python-dotenv

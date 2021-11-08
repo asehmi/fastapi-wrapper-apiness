@@ -16,13 +16,8 @@ set_page_container_style(
         padding_top = 1, padding_right = 10, padding_left = 5, padding_bottom = 10
 )
 
-try:
-    import ptvsd
-    ptvsd.enable_attach(address=('localhost', 6789))
-    # ptvsd.wait_for_attach() # Only include this line if you always want to manually attach the debugger
-except:
-    # Ignore... for Heroku deployments!
-    pass
+import streamlit_debug
+streamlit_debug.set(flag=False, wait_for_client=True, host='localhost', port=8765)
 
 # --------------------------------------------------------------------------------
 
@@ -122,23 +117,27 @@ def main():
                 server = Server(app=app, host=settings.API_HOST, port=settings.API_PORT)
 
                 # server thread will shutdown when the with block exits
-                with server.run_in_thread():
-                    state.API_STARTED = True
-                    counter = st.empty()
+                try:
+                    with server.run_in_thread():
+                        state.API_STARTED = True
+                        counter = st.empty()
 
-                    # Loop for test duration and update message every 5 secs!
-                    i = 0
-                    while i < test_duration/5:
-                        remaining = test_duration - i*5
-                        counter.info(f'You have a {test_duration} seconds to test the API. {remaining} seconds remaining.')
-                        time.sleep(5)
-                        i += 1
+                        # Loop for test duration and update message every 5 secs!
+                        i = 0
+                        while i < test_duration/5:
+                            remaining = test_duration - i*5
+                            counter.info(f'You have a {test_duration} seconds to test the API. {remaining} seconds remaining.')
+                            time.sleep(5)
+                            i += 1
 
-                    state.FILE_UPLOADER_KEY = str(randint(1000,9999))
-                    state.API_APP = None
-                    state.API_INFO = {}
-                    state.API_STARTED = False
+                        state.FILE_UPLOADER_KEY = str(randint(1000,9999))
+                        state.API_APP = None
+                        state.API_INFO = {}
+                        state.API_STARTED = False
+                except:
+                    pass
 
+                if state.API_STARTED == False:
                     st.experimental_rerun()
 
             else: # not test_mode
