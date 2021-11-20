@@ -1,13 +1,12 @@
 import streamlit as st
 import pandas as pd
-import openpyxl
 
-@st.cache(allow_output_mutation=True)
+@st.experimental_memo(persist='disk')
 def csv_to_df(excel_file):
     df = pd.read_csv(excel_file)
     return df
 
-@st.cache(allow_output_mutation=True)
+@st.experimental_memo(persist='disk')
 def excel_to_df(excel_file):
     # https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_excel.html
     # New in Pandas version 1.3.0.
@@ -17,6 +16,7 @@ def excel_to_df(excel_file):
     #   Otherwise if path_or_buffer is in xlsb format, pyxlsb will be used.
     #   Otherwise openpyxl will be used.
     #
+    # import openpyxl
     # df = pd.read_excel(excel_file, engine=openpyxl)
     #
     # Therefore... do not need to provide "engine" when using a "path_or_buffer"

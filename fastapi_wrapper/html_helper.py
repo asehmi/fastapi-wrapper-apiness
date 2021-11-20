@@ -36,5 +36,8 @@ HTML_WRAPPER = r"""
 def wrap_html(html):
     return HTML_WRAPPER.replace('@TABLE', html)
 
+def df_to_html(df):
+    return wrap_html(df.to_html())
+
 def dicts_to_html(dicts):
     return wrap_html(pd.DataFrame([row for row in dicts]).to_html())
