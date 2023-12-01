@@ -1,12 +1,12 @@
 import streamlit as st
 import pandas as pd
 
-@st.experimental_memo(persist='disk')
+@st.cache_data(show_spinner=False)
 def csv_to_df(excel_file):
     df = pd.read_csv(excel_file)
     return df
 
-@st.experimental_memo(persist='disk')
+@st.cache_data(show_spinner=False)
 def excel_to_df(excel_file):
     # https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_excel.html
     # New in Pandas version 1.3.0.
@@ -20,6 +20,6 @@ def excel_to_df(excel_file):
     # df = pd.read_excel(excel_file, engine=openpyxl)
     #
     # Therefore... do not need to provide "engine" when using a "path_or_buffer"
-    df = pd.read_excel(excel_file)
+    df = pd.read_excel(excel_file, engine='openpyxl')
     return df
 

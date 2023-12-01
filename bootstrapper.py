@@ -1,6 +1,5 @@
 """
-Simple bootstrapper intended to be used used to start the API as a daemon process
-with routes supplied from a config database.
+Simple bootstrapper to start the API as a daemon process with routes supplied from a config database.
 """
 import sys
 import uvicorn

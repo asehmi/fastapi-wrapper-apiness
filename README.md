@@ -465,7 +465,7 @@ This shows use of `cols` query parameter:
 
 This shows use of `_in` query parameter to match a set of values, displaying results as an HTML table:
 
-- `/gcfs/gcfs_countries?location_in=(UK,US)&tohtml`
+- `/gcfs/gcfs_countries?location_code_in=(UK,US)&tohtml`
 
 This shows use of `_begin` and `_end` query parameters to match at the beginning and end of values respectively, and column name aliases:
 

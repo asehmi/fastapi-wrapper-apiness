@@ -20,6 +20,8 @@ from fastapi import FastAPI, Response, Request
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 
+import utils.fastapi_patch
+
 import settings.settings as settings
 
 if __package__ is None or __package__ == '':
@@ -27,18 +29,11 @@ if __package__ is None or __package__ == '':
 else:
     from .html_helper import dicts_to_html
 
-try:
-    import ptvsd
-    ptvsd.enable_attach(address=('localhost', 6789))
-    # ptvsd.wait_for_attach() # Only include this line if you always want to manually attach the debugger
-except:
-    # Ignore... for Heroku deployments!
-    pass
-
 # Configure logging...
 # logging.basicConfig(level=logging.DEBUG)
 # logging.basicConfig(filename='log.log', encoding='utf-8', level=logging.DEBUG)
 
+# --------------------------------------------------------------------------------
 
 def create_query_param(name: str, type_: Type, default) -> pydantic.fields.ModelField:
     """Create a query parameter just like fastapi does."""
@@ -48,15 +43,18 @@ def create_query_param(name: str, type_: Type, default) -> pydantic.fields.Model
         default=default,
         annotation=type_,
     )
-    field = fastapi.dependencies.utils.get_param_field(
-        param=param, param_name=name, default_field_info=fastapi.params.Query
+    
+    # HACK: Replace fastapi.dependencies.utils.get_param_field with our own version
+    field = utils.fastapi_patch.get_param_field(
+        param=param, param_name=name, default_field_info=fastapi.Query
     )
+    
     return field
 
 
 def dtype_to_type(dtype) -> Type:
     """Convert numpy/pandas dtype to normal Python type."""
-    if dtype == np.object:
+    if dtype == object:
         return str
     else:
         return type(np.zeros(1, dtype).item())
@@ -320,7 +318,10 @@ class FastAPI_Wrapper(FastAPI):
                 myself = psutil.Process(os.getpid())
                 myself.kill()
 
-            threading.Thread(target=suicide, daemon=True).start()
+            try:
+                threading.Thread(target=suicide, daemon=True).start()
+            except:
+                pass
             logging.info(f'>>> Successfully killed API <<<')
             print(f'>>> Successfully killed API <<<')
             return {"success": True}  
@@ -612,3 +613,20 @@ class FastAPI_Wrapper(FastAPI):
         route = self._find_route(route_path)
         return route.dependant.query_params
 
+
+from abc import ABCMeta
+# https://stackoverflow.com/questions/6760685/creating-a-singleton-in-python
+class Singleton(type, metaclass=ABCMeta):
+    _instances = {}
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+class FastAPI_Wrapper_Singleton(metaclass=Singleton):
+    def __init__(self, init_routes_with_config_db=False, config_db='routes_config.db'):
+        self.fastapi_wrapper = FastAPI_Wrapper(init_routes_with_config_db=init_routes_with_config_db, config_db=config_db)
+
+    @property
+    def instance(self):
+        return self.fastapi_wrapper

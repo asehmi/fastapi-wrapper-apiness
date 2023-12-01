@@ -6,18 +6,16 @@ from random import randint
 import logging
 import requests
 
+from fastapi_wrapper.fastapi_wrapper import FastAPI_Wrapper, FastAPI_Wrapper_Singleton
+
 import settings.settings as settings
 
 from data import csv_to_df, excel_to_df
 
-from utils.common import set_page_container_style
-set_page_container_style(
-        max_width = 1100, max_width_100_percent = True,
-        padding_top = 1, padding_right = 10, padding_left = 5, padding_bottom = 10
-)
+st.set_page_config(page_title='Apiness', page_icon='\U0001F680', layout='wide', initial_sidebar_state='collapsed')
 
 import streamlit_debug
-streamlit_debug.set(flag=False, wait_for_client=True, host='localhost', port=8765)
+streamlit_debug.set(flag=True, wait_for_client=True, host='localhost', port=8765)
 
 # --------------------------------------------------------------------------------
 
@@ -44,6 +42,8 @@ logging.basicConfig(
 
 # --------------------------------------------------------------------------------
 
+
+
 # NOTE: Design point... only main() is allowed to mutate state. All supporting functions should not mutate state.
 def main():
     st.title('APINESS')
@@ -52,11 +52,7 @@ def main():
     if state.API_APP is None:
         print('>>> Creating new FastAPI_Wrapper <<<')
         
-        # Need to put this import here otherwise it gets reloaded in Streamlit's reruns
-        # and messes up registration of routes which are dynamically created
-        from fastapi_wrapper.fastapi_wrapper import FastAPI_Wrapper
-
-        app = FastAPI_Wrapper(init_routes_with_config_db=False, config_db=state.API_CONFIG_DB)
+        app: FastAPI_Wrapper = FastAPI_Wrapper_Singleton(init_routes_with_config_db=False, config_db=state.API_CONFIG_DB).instance
         state.API_APP = app
         state.API_INFO = {}
         state.API_STARTED = False
@@ -67,11 +63,12 @@ def main():
     if not state.API_STARTED:
         st.markdown('## \U0001F4C2 Upload data files')
         st.write('Upload one or more Excel data files. Duplicate files and files already processed will be ignored.')
-        excel_files =  st.file_uploader('', type=['xlsx', 'csv'], accept_multiple_files=True, key=state.FILE_UPLOADER_KEY)
-        _, _, _, _, _, _, c7 = st.columns(7) 
-        if len(excel_files) > 0 and c7.button('\U00002716 Clear all'):
-            state.FILE_UPLOADER_KEY = str(randint(1000,9999))
-            st.experimental_rerun()
+        c1, _ = st.columns([5,5])
+        with c1:
+            excel_files = st.file_uploader('File', type=['xlsx', 'csv'], accept_multiple_files=True, label_visibility='collapsed', key=state.FILE_UPLOADER_KEY)
+            if len(excel_files) > 0 and st.button('\U00002716 Clear all'):
+                state.FILE_UPLOADER_KEY = str(randint(1000,9999))
+                st.rerun()
 
     # STEP 2: CONFIGURE NAMES & MODE
     if not state.API_STARTED and len(excel_files) > 0:
@@ -81,84 +78,86 @@ def main():
                  'for each data file.')
         st.caption('_Repeat_ as many times as required.')
         excel_files_dict, custom_names_info = database_info_form(excel_files)
-        _, _, _, _, _, _, c7 = st.columns(7) 
-        if c7.button('\U0001F528 Process'):
-            state.API_INFO = create_databases(
-                app, excel_files_dict, custom_names_info,
-                state.API_INFO, state.API_STARTED, settings.API_HOST, settings.API_PORT
-            )
 
-    # STEP 4: EXPOSE AS APIS
-    if not state.API_STARTED and len(excel_files) > 0 and len(state.API_INFO.items()) > 0:
-        st.markdown('## \U0001F3F3\U0000FE0F\U0000200D\U0001F308 Launch API')
-        st.write('When customization is complete, select \U0001F680 **Launch** to start the API endpoints.')
+        c1, _ = st.columns([4,4])
+        with c1:
+            if st.button('\U0001F528 Process'):
+                    state.API_INFO = create_databases(
+                        app, excel_files_dict, custom_names_info,
+                        state.API_INFO, state.API_STARTED, settings.API_HOST, settings.API_PORT
+                    )
 
-        with st.expander('\U0001F3D7 Set test mode and duration (optional)', expanded=False):
-            c1, c2, _ = st.columns(3)
-            test_mode = c1.checkbox('On | Off', value=True)
-            test_duration = c2.slider('Test duration (seconds)', min_value=15, max_value=600, value=30, step=15)
+            # STEP 4: EXPOSE AS APIS
+            if not state.API_STARTED and len(excel_files) > 0 and len(state.API_INFO.items()) > 0:
+                st.markdown('## \U0001F3F3\U0000FE0F\U0000200D\U0001F308 Launch API')
+                st.write('When customization is complete, select \U0001F680 **Launch** to start the API endpoints.')
 
-        status = st.empty()
-        status.markdown('### Status: Pending Launch \U0001F534 | Test Mode ' + ('On \U0001F7E2' if test_mode else 'Off \U0001F534'))
-        if st.checkbox('\U0001F680 Launch', value=False):
+                with st.expander('\U0001F3D7 Set test mode and duration (optional)', expanded=False):
+                    test_mode = st.checkbox('On | Off', value=True)
+                    if test_mode:
+                        test_duration = st.number_input('Test duration (seconds)', min_value=15, max_value=600, value=30, step=15)
 
-            with st.expander('\U0001F4E1 API endpoint details'):
-                if len(state.API_INFO.items()) > 0:
-                    st.markdown('### \U0001F4E1 API endpoints')
-                    print_api_info(state.API_INFO, state.API_CONFIG_DB, settings.API_HOST, settings.API_PORT)
-                else:
-                    st.write('\U0001F4E1 API details will be shown here when \U0001F4C2 uploaded files have been \U0001F528 processed.')
+                status = st.empty()
+                status.markdown('### Status: Pending Launch \U0001F534 | Test Mode ' + ('On \U0001F7E2' if test_mode else 'Off \U0001F534'))
+                if st.checkbox('\U0001F680 Launch', value=False):
 
-            status.markdown('### Status: Live \U0001F7E2 | Test Mode ' + ('On \U0001F7E2' if test_mode else 'Off \U0001F534'))
+                    with st.expander('\U0001F4E1 API endpoint details'):
+                        if len(state.API_INFO.items()) > 0:
+                            st.markdown('### \U0001F4E1 API endpoints')
+                            print_api_info(state.API_INFO, state.API_CONFIG_DB, settings.API_HOST, settings.API_PORT)
+                        else:
+                            st.write('\U0001F4E1 API details will be shown here when \U0001F4C2 uploaded files have been \U0001F528 processed.')
 
-            if test_mode:
+                    status.markdown('### Status: Live \U0001F7E2 | Test Mode ' + ('On \U0001F7E2' if test_mode else 'Off \U0001F534'))
 
-                from utils.UvicornServer import Server
-                server = Server(app=app, host=settings.API_HOST, port=settings.API_PORT)
+                    if test_mode:
 
-                # server thread will shutdown when the with block exits
-                try:
-                    with server.run_in_thread():
-                        state.API_STARTED = True
-                        counter = st.empty()
+                        from utils.UvicornServer import Server
+                        server = Server(app=app, host=settings.API_HOST, port=settings.API_PORT)
 
-                        # Loop for test duration and update message every 5 secs!
-                        i = 0
-                        while i < test_duration/5:
-                            remaining = test_duration - i*5
-                            counter.info(f'You have a {test_duration} seconds to test the API. {remaining} seconds remaining.')
-                            time.sleep(5)
-                            i += 1
+                        # server thread will shutdown when the with block exits
+                        try:
+                            with server.run_in_thread():
+                                state.API_STARTED = True
+                                counter = st.empty()
 
-                        state.FILE_UPLOADER_KEY = str(randint(1000,9999))
-                        state.API_APP = None
-                        state.API_INFO = {}
-                        state.API_STARTED = False
-                except:
-                    pass
+                                # Loop for test duration and update message every 5 secs!
+                                i = 0
+                                while i < test_duration/5:
+                                    remaining = test_duration - i*5
+                                    counter.info(f'You have a {test_duration} seconds to test the API. {remaining} seconds remaining.')
+                                    time.sleep(5)
+                                    i += 1
 
-                if state.API_STARTED == False:
-                    st.experimental_rerun()
+                                state.FILE_UPLOADER_KEY = str(randint(1000,9999))
+                                state.API_APP = None
+                                state.API_INFO = {}
+                                state.API_STARTED = False
+                        except:
+                            pass
 
-            else: # not test_mode
+                        if state.API_STARTED == False:
+                            st.rerun()
 
-                if not state.API_STARTED:
-                    import subprocess
-                    import threading
+                    else: # not test_mode
 
-                    def run(job):
-                        print (f"\nRunning job: {job}\n")
-                        proc = subprocess.Popen(job)
-                        proc.wait()
-                        return proc
+                        if not state.API_STARTED:
+                            import subprocess
+                            import threading
 
-                    job = ['python', os.path.join('./', 'bootstrapper.py'), state.API_CONFIG_DB, settings.API_HOST, str(settings.API_PORT)]
+                            def run(job):
+                                print (f"\nRunning job: {job}\n")
+                                proc = subprocess.Popen(job)
+                                proc.wait()
+                                return proc
 
-                    # server thread will remain active as long as streamlit thread is running, or is manually shutdown
-                    thread = threading.Thread(name='FastAPI-Bootstrapper', target=run, args=(job,), daemon=True)
-                    thread.start()
+                            job = ['python', os.path.join('./', 'bootstrapper.py'), state.API_CONFIG_DB, settings.API_HOST, str(settings.API_PORT)]
 
-                    state.API_STARTED = True
+                            # server thread will remain active as long as streamlit thread is running, or is manually shutdown
+                            thread = threading.Thread(name='FastAPI-Bootstrapper', target=run, args=(job,), daemon=True)
+                            thread.start()
+
+                            state.API_STARTED = True
 
 
 def database_info_form(excel_files):
@@ -175,7 +174,7 @@ def database_info_form(excel_files):
     for _, excel_file in excel_files_dict.items():
         key = excel_file.name.lower().replace('.csv', '').replace('.xlsx', '').replace(' ', '_').replace('.', '_')
 
-        c1, c2, c3, c4 = st.columns(4)
+        c1, c2, c3, c4, _ = st.columns([1,1,1,1,2])
         if len(custom_names_info.items()) == 0:
             c1.markdown('### File')
             c2.markdown('### Custom DB name')
@@ -187,26 +186,30 @@ def database_info_form(excel_files):
             st.markdown(f'#### {excel_file.name}')
         with c2:
             db_name_key = f'db_name#{key}'
-            custom_names_info[db_name_key] = st.text_input('', value=key, key=db_name_key)
+            custom_names_info[db_name_key] = st.text_input('db_name', value=key, label_visibility='collapsed', key=db_name_key)
         with c3:
             table_name_key = f'table_name#{key}'
-            custom_names_info[table_name_key] = st.text_input('', value=key, key=table_name_key)
+            custom_names_info[table_name_key] = st.text_input('table_name', value=key, label_visibility='collapsed', key=table_name_key)
         with c4:
             update_mode_key = f'update_mode#{key}'
             st.write('\n')
-            custom_names_info[update_mode_key] = st.radio('', ['replace', 'append', 'fail'], index=0, key=update_mode_key)
-            # custom_names_info[update_mode_key] = st.selectbox('', ['replace', 'append', 'fail'], index=0, key=update_mode_key)
+            custom_names_info[update_mode_key] = st.radio('update_mode', ['replace', 'append', 'fail'], index=0, label_visibility='collapsed', key=update_mode_key)
+            # custom_names_info[update_mode_key] = st.selectbox('update_mode', ['replace', 'append', 'fail'], index=0, label_visibility='collapsed', key=update_mode_key)
 
     return excel_files_dict, custom_names_info
 
-def create_databases(app, excel_files_dict, custom_names_info, api_info, started, host, port):
+def create_databases(
+    app: FastAPI_Wrapper, excel_files_dict: dict,
+    custom_names_info: dict, api_info: dict, 
+    started: bool, host: str, port: int
+):
     message = st.empty()
 
     for _, excel_file in excel_files_dict.items():
         message.info(f'Loading {excel_file.name}...')
         time.sleep(0.5)
 
-        if excel_file.type in ['application/vnd.ms-excel', 'application/octet-stream']:
+        if excel_file.type in ['application/vnd.ms-excel', 'application/octet-stream', 'text/csv']:
             df = csv_to_df(excel_file)
         else: # 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             df = excel_to_df(excel_file)
@@ -298,12 +301,12 @@ def sidebar():
             state.API_INFO = {}
             state.API_STARTED = False
 
-            st.experimental_rerun()
+            st.rerun()
 
     # ABOUT
     st.sidebar.header('About')
     st.sidebar.info('APINESS is automatically converting an Excel data file into an API!\n\n' + \
-        '(c) 2021. Oxford Economics Ltd. All rights reserved.')
+        '(c) 2023. A12i | CloudOpti Ltd. All rights reserved.')
     st.sidebar.markdown('---')
 
     # Display Readme.md
