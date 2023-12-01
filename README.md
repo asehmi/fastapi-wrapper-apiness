@@ -1,9 +1,9 @@
 # APINESS
 > _A FastAPI CLI & Streamlit App wrapper for Excel files_
 
-> Arvindra Sehmi, Oxford Economics Ltd. | [Website](https://www.oxfordeconomics.com/) | [LinkedIn](https://www.linkedin.com/in/asehmi/)
+> Arvindra Sehmi, A12i | CloudOpti Ltd. | [Website](https://sehmi-conscious.medium.com/) | [LinkedIn](https://www.linkedin.com/in/asehmi/)
 
-> Updated: 14 September, 2021
+> Updated: 1 December, 2023
 
 ---
 
@@ -27,7 +27,7 @@ Read on to see how to get this little magic into your data handling workflows.
 
 ## TOC
 - Why I implemented this?
-- Value of SQL Model DBs to OE?
+- Value of SQL Model DBs
 - Mods
 - Streamlit App Demo
   - Running the Streamlit app
@@ -56,26 +56,21 @@ Read on to see how to get this little magic into your data handling workflows.
 
 ## Why I implemented this?
 
-- To enhance and extend some internal Oxford Economics (OE) tools, e.g., [Modelit](https://github.com/OxfordEconomics/Streamlit-Projects/tree/master/Modelit)
-  project [available to OE clients only, sorry!] so that [MDL-generated data exports](https://www.oxfordeconomics.com/techlabs/mdl-use-case-automating-model-solutions)
-  can enjoy some _apiness_ `:-)`
-- An easy way to expose _Excel-Files-as-Databases_ with a _REST API_ so they can be queried in `Streamlit`, and other apps such as `Power BI`, `Tableau` and `Jupyter Notebooks`
+- As an easy way to expose _Excel-Files-as-Databases_ with a _REST API_ so they can be queried in `Streamlit`, and other apps such as `Power BI`, `Tableau` and `Jupyter Notebooks`
 - It can be useful for mocking data sources in CI/CD testing pipelines
 - To experiment with [FastAPI](https://fastapi.tiangolo.com/), which has gained much attention and enterprise adoption (e.g. Microsoft) 
 
 
-## Value of SQL Model DBs to OE?
+## Value of SQL Model DBs
 
-- Command line tooling lends itself to pipeline batch automation working with OE's economic model bases
-- Enables OE staff to use a standard, high performance and scalable data format and query language. This makes for a
-more flexible and efficient workflow than can be achieved using OE's native model database tools
+- Command line tooling lends itself to pipeline batch automation when working data models
 - SQL databases are portable across multiple device form factors and operating systems. This is especially true of SQLite databases.
 - SQL databases are easily shared on local, cloud and edge data networks
 - SQL databases are better for data analytics and visualization tasks, e.g. direct connectors in Power BI & Tableau
-- Ability to store multiple model bases in a single SQL database, e.g. multiple scenarios or model vintages can be stored in one SQL database
+- Ability to store multiple data snapshots in a single SQL database, e.g. multiple modelling scenarios (vintages) can be stored in one SQL database
 - It's easy to export data to multiple target formats from a SQL DB using commonly available tools and programming languages,
 e.g. [DB Browser for SQLite](https://sqlitebrowser.org/)
-- Can be used to augment model data exports from OE's Online Global Economic Model (SkyMod) API
+- Can be used to augment existing data APIs with ad-hoc querying
 
 ---
 
