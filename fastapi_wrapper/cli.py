@@ -8,11 +8,10 @@ import uvicorn
 
 if __package__ is None or __package__ == '':
     # uses current directory visibility
-    # allows 
-    from fastapi_wrapper import FastAPI_Wrapper
+    from fastapi_wrapper import FastAPI_Wrapper, FastAPI_Wrapper_Singleton
 else:
     # uses current package visibility
-    from .fastapi_wrapper import FastAPI_Wrapper
+    from .fastapi_wrapper import FastAPI_Wrapper, FastAPI_Wrapper_Singleton
 
 typer_app = typer.Typer()
 
@@ -85,7 +84,7 @@ def main(
 
     if init_routes_with_config_db == True:
         typer.echo(f"\U0001F528 Creating > Routes from file: {config_db}")
-        app = FastAPI_Wrapper(init_routes_with_config_db=True, config_db=config_db)
+        app: FastAPI_Wrapper = FastAPI_Wrapper_Singleton(init_routes_with_config_db=False, config_db=config_db).instance
         # Force True
         start_server = True
     else:

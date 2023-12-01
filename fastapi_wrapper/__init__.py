@@ -1,3 +1,3 @@
-__version__ = "0.5.5"
+__version__ = "0.7.0"
 
 print(f'fastapi_wrapper v{__version__}')

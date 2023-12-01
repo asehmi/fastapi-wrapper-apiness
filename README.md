@@ -211,11 +211,11 @@ pip uninstall fastapi-wrapper
 ### Running the CLI
 
 Use the CSV data file (472718 rows) in this repo for testing ([CustomMacroModel_L_A.csv](./data/CustomMacroModel_L_A.csv)). To start
-an API, run one of the following commands:
+an API, run one of the following commands from the root directory:
 
 ```bash
 # From file
-fastapi-wrapper CustomMacroModel_L_A.csv
+fastapi-wrapper ./data/CustomMacroModel_L_A.csv
 
 # Directly from URL
 fastapi-wrapper https://raw.githubusercontent.com/asehmi/fastapi-wrapper-apiness/main/data/CustomMacroModel_L_A.csv

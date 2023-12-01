@@ -12,7 +12,7 @@ import settings.settings as settings
 
 from data import csv_to_df, excel_to_df
 
-st.set_page_config(page_title='Apiness', page_icon='\U0001F680', layout='wide', initial_sidebar_state='collapsed')
+st.set_page_config(page_title='Apiness', page_icon='\U0001F680', layout='wide', initial_sidebar_state='expanded')
 
 import streamlit_debug
 streamlit_debug.set(flag=True, wait_for_client=True, host='localhost', port=8765)
@@ -279,7 +279,7 @@ def print_api_info(api_info, config, host, port):
     ''')
 
 def sidebar():
-    st.sidebar.image('./images/logo.jpg', output_format='jpg')
+    st.sidebar.image('./images/logo.png', output_format='png')
 
     if state.API_STARTED:
         # st.sidebar.markdown(f'''
